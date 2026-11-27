@@ -122,6 +122,7 @@ const SPILL = [
   .snart .bilde{filter:grayscale(.6) brightness(.7)}
   .merke{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);font-size:11px;font-weight:600;
          padding:3px 8px;border-radius:999px;z-index:1}
+  .nett{color:#ffb02e;font-weight:600}
   .tom{color:var(--dempet);padding:30px 0}
   footer{text-align:center;color:var(--dempet);margin-top:50px;font-size:14px;letter-spacing:1px}
 
@@ -151,7 +152,7 @@ const SPILL = [
   <header>
     <div>
       <h1>Wåle <span>Arcade</span></h1>
-      <div class="under" id="antall"></div>
+      <div class="under"><span id="antall"></span> <span id="nett" class="nett" hidden>· Uten nett</span></div>
     </div>
     <input class="sok" id="sok" type="search" placeholder="Søk etter spill …" autocomplete="off">
   </header>
@@ -197,11 +198,18 @@ function lagreSist(navn){
 const IKON_FILER = ["icon-512.png","icon-192.png","apple-touch-icon.png","icons/icon-512.png",
   "icons/icon-192.png","ikon-512.png","ikon-192.png","ikon.png","icon.png","logo.png","favicon.png"];
 
+function husketIkon(navn){ try{ return JSON.parse(localStorage.getItem("ikoner") || "{}")[navn]; }catch(e){ return null; } }
+function huskIkon(navn, url){
+  try{ const m = JSON.parse(localStorage.getItem("ikoner") || "{}"); m[navn] = url; localStorage.setItem("ikoner", JSON.stringify(m)); }catch(e){}
+}
+
 function ikonKandidater(s){
   if(s.ikon) return [s.ikon];
   if(!s.url) return [];
   const base = s.url.replace(/\/+$/, "") + "/";
-  return IKON_FILER.map(f => base + f);
+  const liste = IKON_FILER.map(f => base + f);
+  const husket = husketIkon(s.navn);
+  return husket ? [husket, ...liste.filter(u => u !== husket)] : liste;
 }
 
 function settIkon(bilde, s){
@@ -211,7 +219,10 @@ function settIkon(bilde, s){
   let i = 0;
   img.alt = "";
   img.className = "app-ikon";
-  img.onload = () => { if(img.naturalWidth >= 48){ bilde.classList.add("har-ikon"); bilde.appendChild(img); } else neste(); };
+  img.onload = () => {
+    if(img.naturalWidth >= 48){ bilde.classList.add("har-ikon"); bilde.appendChild(img); huskIkon(s.navn, liste[i]); }
+    else neste();
+  };
   img.onerror = neste;
   function neste(){ i++; if(i < liste.length) img.src = liste[i]; }
   img.src = liste[0];
@@ -274,6 +285,7 @@ function vis(tekst){
 function startSpill(s){
   if(!s.url){ vis(`${s.navn} er ikke lagt ut ennå`); return; }
   lagreSist(s.navn);
+  if(!navigator.onLine) vis("Du er uten nett – spillet virker bare hvis det er åpnet her med nett før");
   $("tittel").textContent = s.navn;
   $("ny-fane").href = s.url;
   $("ramme").src = s.url;
@@ -314,6 +326,15 @@ window.addEventListener("load", () => {
   const s = SPILL.find(x => x.navn === navn);
   if(s && s.url){ history.replaceState(null, "", location.pathname); startSpill(s); }
 });
+
+function oppdaterNett(){ $("nett").hidden = navigator.onLine; }
+window.addEventListener("online", oppdaterNett);
+window.addEventListener("offline", oppdaterNett);
+oppdaterNett();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
 
 lagFilter(); tegn();
 </script>
