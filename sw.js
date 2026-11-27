@@ -1,6 +1,6 @@
 // Wåle Arcade – lagrer portalen på telefonen så den virker uten nett.
 // Bytt tallet under når du vil tvinge fram en ny versjon.
-const VERSJON = "wale-arcade-v1";
+const VERSJON = "wale-arcade-v2";
 const FILER = ["./", "./index.html", "./manifest.json", "./ikon-192.png", "./ikon-512.png"];
 
 self.addEventListener("install", e => {
