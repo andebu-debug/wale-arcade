@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wåle Arcade</title>
+<meta name="theme-color" content="#141118">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="ikon-192.png">
+<link rel="apple-touch-icon" href="ikon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wåle Arcade">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+<script>
+/* =====================================================================
+   SPILLENE DINE  –  det er BARE denne listen du trenger å endre.
+
+   For hvert spill:
+     navn:  navnet som vises
+     url:   adressen fra Vercel (f.eks. "https://boble-blokk.vercel.app")
+            La den stå tom ("") hvis spillet ikke er ute ennå.
+     type:  Action, Sport, Puslespill, Eventyr eller Arkade
+     tegn:  bokstav eller emoji på flisen
+     farge: to farger til fargeovergangen
+     tekst: kort beskrivelse
+
+   Nytt spill? Kopier en hel { ... }, linje og lim inn nederst.
+   ===================================================================== */
+const SPILL = [
+  { navn: "Andebu Fotball Manager", url: "https://andebu-fotball-manager.vercel.app",
+    type: "Sport", tegn: "⚽", farge: ["#1fae5b", "#0d5c3a"],
+    tekst: "Bygg Andebu til Champions League" },
+
+  { navn: "Andebu Rivals", url: "",
+    type: "Action", tegn: "🎯", farge: ["#ff5a36", "#b3122e"],
+    tekst: "3D-skyting på Andebu-baner" },
+
+  { navn: "GTA Andebu City", url: "",
+    type: "Action", tegn: "🚓", farge: ["#ffb02e", "#d2481a"],
+    tekst: "Biljakt i Andebu City" },
+
+  { navn: "Hyperkommando 1", url: "",
+    type: "Action", tegn: "🦅", farge: ["#e3b341", "#7a4a12"],
+    tekst: "Operation Stålfågel" },
+
+  { navn: "100 Doors Escape", url: "",
+    type: "Puslespill", tegn: "🚪", farge: ["#6b1d2b", "#1a0a10"],
+    tekst: "Hjelp Felicia eller Oscar ut" },
+
+  { navn: "Boble-Blokk", url: "",
+    type: "Puslespill", tegn: "🫧", farge: ["#4fd1ff", "#5b3bd6"],
+    tekst: "Tetris møter Bubble Bobble" },
+
+  { navn: "Rock Man", url: "",
+    type: "Arkade", tegn: "💎", farge: ["#8a6a3a", "#2e2416"],
+    tekst: "Grav etter diamanter" },
+
+  { navn: "Angry Grannies", url: "",
+    type: "Arkade", tegn: "👵", farge: ["#ff6b8b", "#b0235a"],
+    tekst: "Skyt sinte bestemødre" },
+
+  { navn: "Flipperfest", url: "",
+    type: "Arkade", tegn: "🎸", farge: ["#d23cff", "#3a1aa8"],
+    tekst: "Flipper med musikktemaer" },
+
+  { navn: "Globetrotter", url: "",
+    type: "Eventyr", tegn: "🌍", farge: ["#3ad0a5", "#1d5fa8"],
+    tekst: "Reis jorda rundt" },
+
+  { navn: "Runekjernen", url: "",
+    type: "Eventyr", tegn: "🗡️", farge: ["#7b5cff", "#1e8a6a"],
+    tekst: "Mario, Zelda og Metroid i ett" },
+];
+/* ===================== (ikke endre noe under her) ===================== */
+</script>
+
+<style>
+  :root{
+    --bg:#141118; --kort:#1c1820; --kant:#2a2530; --tekst:#f3ede6;
+    --dempet:#9a93a3; --aksent:#ff6a33;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tekst);font-family:Outfit,system-ui,sans-serif}
+  body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  .wrap{max-width:1300px;margin:0 auto;padding:36px 22px 40px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  h1{font-size:clamp(34px,6vw,52px);font-weight:800;letter-spacing:-1px;line-height:1}
+  h1 span{color:var(--aksent)}
+  .under{color:var(--dempet);margin-top:8px;font-size:16px}
+  .sok{background:var(--kort);border:1px solid var(--kant);color:var(--tekst);
+       border-radius:999px;padding:12px 18px;font:inherit;font-size:16px;width:min(320px,100%)}
+  .sok:focus{outline:2px solid var(--aksent);border-color:transparent}
+  .filter{display:flex;gap:8px;margin:22px 0 6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .filter button{flex:none;background:var(--kort);border:1px solid var(--kant);color:var(--tekst);
+       padding:8px 16px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+  .filter button.aktiv{background:var(--aksent);border-color:var(--aksent);color:#1a0d06}
+  h2{font-size:20px;margin:26px 0 12px}
+  .rad{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+  .rad .flis{flex:none;width:150px}
+  .rutenett{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+  .flis{background:var(--kort);border:1px solid var(--kant);border-radius:16px;padding:14px;
+        cursor:pointer;transition:transform .15s,border-color .15s;text-align:left;color:inherit;font:inherit}
+  .flis:hover{transform:translateY(-3px);border-color:#4a4252}
+  .bilde{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-size:56px;
+         position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+  .bilde::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.25),transparent 55%)}
+  .spill-knapp{position:absolute;right:8px;bottom:8px;width:40px;height:40px;border-radius:50%;
+       background:var(--aksent);display:grid;place-items:center;font-size:16px;color:#1a0d06;
+       opacity:0;transform:translateY(6px);transition:.15s;z-index:1}
+  .flis:hover .spill-knapp{opacity:1;transform:none}
+  .navn{font-weight:700;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .info{color:var(--dempet);font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snart .bilde{filter:grayscale(.6) brightness(.7)}
+  .merke{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);font-size:11px;font-weight:600;
+         padding:3px 8px;border-radius:999px;z-index:1}
+  .tom{color:var(--dempet);padding:30px 0}
+  footer{text-align:center;color:var(--dempet);margin-top:50px;font-size:14px;letter-spacing:1px}
+
+  /* Spillvinduet */
+  #spiller{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:10}
+  #spiller.apen{display:flex}
+  .topp{display:flex;align-items:center;gap:10px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));
+        background:var(--bg);border-bottom:1px solid var(--kant)}
+  .topp button,.topp a{background:var(--kort);border:1px solid var(--kant);color:var(--tekst);
+        padding:8px 14px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
+  .topp .tilbake{background:var(--aksent);border-color:var(--aksent);color:#1a0d06}
+  .topp .tittel{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #ramme{flex:1;border:0;width:100%;background:#000}
+  .skjul-topp .topp{display:none}
+  #vis-topp{position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:11;display:none;
+        background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px}
+  .skjul-topp #vis-topp{display:block}
+
+  #melding{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);
+       background:var(--kort);border:1px solid var(--kant);padding:12px 18px;border-radius:12px;
+       transition:.25s;z-index:20;max-width:90vw;text-align:center}
+  #melding.vis{transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Wåle <span>Arcade</span></h1>
+      <div class="under" id="antall"></div>
+    </div>
+    <input class="sok" id="sok" type="search" placeholder="Søk etter spill …" autocomplete="off">
+  </header>
+
+  <div class="filter" id="filter"></div>
+
+  <section id="sist-seksjon" hidden>
+    <h2>Sist spilt</h2>
+    <div class="rad" id="sist"></div>
+  </section>
+
+  <h2 id="alle-tittel">Alle spill</h2>
+  <div class="rutenett" id="alle"></div>
+
+  <footer>WÅLE PRODUCTION 2026</footer>
+</div>
+
+<div id="spiller">
+  <div class="topp">
+    <button class="tilbake" id="tilbake">← Tilbake</button>
+    <div class="tittel" id="tittel"></div>
+    <button id="fullskjerm">⛶ Fullskjerm</button>
+    <a id="ny-fane" target="_blank" rel="noopener">↗</a>
+  </div>
+  <button id="vis-topp">☰ Meny</button>
+  <iframe id="ramme" allow="autoplay; fullscreen; gamepad; clipboard-write" allowfullscreen></iframe>
+</div>
+
+<div id="melding"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let valgtType = "Alle";
+
+function hentSist(){ try{ return JSON.parse(localStorage.getItem("sist") || "[]"); }catch(e){ return []; } }
+function lagreSist(navn){
+  try{
+    const liste = [navn, ...hentSist().filter(n => n !== navn)].slice(0, 8);
+    localStorage.setItem("sist", JSON.stringify(liste));
+  }catch(e){}
+}
+
+function lagFlis(s){
+  const b = document.createElement("button");
+  b.className = "flis" + (s.url ? "" : " snart");
+  b.innerHTML = `
+    <div class="bilde" style="background:linear-gradient(135deg,${s.farge[0]},${s.farge[1]})">
+      ${s.url ? "" : '<span class="merke">Kommer snart</span>'}
+      <span style="position:relative;z-index:1">${s.tegn}</span>
+      ${s.url ? '<span class="spill-knapp">▶</span>' : ""}
+    </div>
+    <div class="navn"></div>
+    <div class="info"></div>`;
+  b.querySelector(".navn").textContent = s.navn;
+  b.querySelector(".info").textContent = s.tekst;
+  b.onclick = () => startSpill(s);
+  return b;
+}
+
+function tegn(){
+  const sok = $("sok").value.trim().toLowerCase();
+  const synlige = SPILL.filter(s =>
+    (valgtType === "Alle" || s.type === valgtType) &&
+    (!sok || (s.navn + " " + s.tekst + " " + s.type).toLowerCase().includes(sok)));
+
+  const alle = $("alle"); alle.innerHTML = "";
+  synlige.forEach(s => alle.appendChild(lagFlis(s)));
+  if(!synlige.length) alle.innerHTML = '<div class="tom">Fant ingen spill.</div>';
+
+  const klare = SPILL.filter(s => s.url).length;
+  $("antall").textContent = `${SPILL.length} spill · ${klare} klare til å spilles`;
+
+  const sist = hentSist().map(n => SPILL.find(s => s.navn === n)).filter(s => s && s.url);
+  $("sist-seksjon").hidden = !sist.length || !!sok || valgtType !== "Alle";
+  const rad = $("sist"); rad.innerHTML = "";
+  sist.forEach(s => rad.appendChild(lagFlis(s)));
+}
+
+function lagFilter(){
+  const typer = ["Alle", ...new Set(SPILL.map(s => s.type))];
+  const f = $("filter"); f.innerHTML = "";
+  typer.forEach(t => {
+    const b = document.createElement("button");
+    b.textContent = t;
+    if(t === valgtType) b.classList.add("aktiv");
+    b.onclick = () => { valgtType = t; lagFilter(); tegn(); };
+    f.appendChild(b);
+  });
+}
+
+function vis(tekst){
+  const m = $("melding"); m.textContent = tekst; m.classList.add("vis");
+  clearTimeout(vis.t); vis.t = setTimeout(() => m.classList.remove("vis"), 2500);
+}
+
+function startSpill(s){
+  if(!s.url){ vis(`${s.navn} er ikke lagt ut ennå`); return; }
+  lagreSist(s.navn);
+  $("tittel").textContent = s.navn;
+  $("ny-fane").href = s.url;
+  $("ramme").src = s.url;
+  $("spiller").classList.add("apen");
+  document.body.style.overflow = "hidden";
+  history.pushState({spill: s.navn}, "", "#" + encodeURIComponent(s.navn));
+}
+
+function lukkSpill(){
+  $("spiller").classList.remove("apen", "skjul-topp");
+  $("ramme").src = "about:blank";
+  document.body.style.overflow = "";
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  tegn();
+}
+
+$("tilbake").onclick = () => history.back();
+window.addEventListener("popstate", () => { if($("spiller").classList.contains("apen")) lukkSpill(); });
+
+$("fullskjerm").onclick = () => {
+  const el = $("spiller");
+  if(el.requestFullscreen){ el.requestFullscreen().catch(()=>{}); }
+  el.classList.add("skjul-topp");
+};
+$("vis-topp").onclick = () => {
+  $("spiller").classList.remove("skjul-topp");
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+};
+document.addEventListener("fullscreenchange", () => {
+  if(!document.fullscreenElement) $("spiller").classList.remove("skjul-topp");
+});
+
+$("sok").addEventListener("input", tegn);
+
+// Åpne direkte hvis lenken har #Spillnavn
+window.addEventListener("load", () => {
+  const navn = decodeURIComponent(location.hash.slice(1));
+  const s = SPILL.find(x => x.navn === navn);
+  if(s && s.url){ history.replaceState(null, "", location.pathname); startSpill(s); }
+});
+
+lagFilter(); tegn();
+</script>
+</body>
+</html>
