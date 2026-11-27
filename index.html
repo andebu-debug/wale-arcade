@@ -27,6 +27,8 @@
      tegn:  bokstav eller emoji på flisen
      farge: to farger til fargeovergangen
      tekst: kort beskrivelse
+     ikon:  (valgfritt) full adresse til app-ikonet, hvis det ikke dukker opp
+            av seg selv. Ellers hentes ikonet automatisk fra spillet.
 
    Nytt spill? Kopier en hel { ... }, linje og lim inn nederst.
    ===================================================================== */
@@ -35,45 +37,45 @@ const SPILL = [
     type: "Sport", tegn: "⚽", farge: ["#1fae5b", "#0d5c3a"],
     tekst: "Bygg Andebu til Champions League" },
 
-  { navn: "Andebu Rivals", url: "",
+  { navn: "Andebu Rivals", url: "https://andebu-rivals.vercel.app",
     type: "Action", tegn: "🎯", farge: ["#ff5a36", "#b3122e"],
     tekst: "3D-skyting på Andebu-baner" },
 
-  { navn: "GTA Andebu City", url: "",
+  { navn: "GTA Andebu City", url: "https://gta-andebu-city.vercel.app",
     type: "Action", tegn: "🚓", farge: ["#ffb02e", "#d2481a"],
     tekst: "Biljakt i Andebu City" },
 
-  { navn: "Hyperkommando 1", url: "",
+  { navn: "Hyperkommando 1", url: "https://hyperkommando1.vercel.app",
     type: "Action", tegn: "🦅", farge: ["#e3b341", "#7a4a12"],
     tekst: "Operation Stålfågel" },
 
-  { navn: "100 Doors Escape", url: "",
+  { navn: "100 Doors Escape", url: "https://100doors-sigma.vercel.app",
     type: "Puslespill", tegn: "🚪", farge: ["#6b1d2b", "#1a0a10"],
     tekst: "Hjelp Felicia eller Oscar ut" },
 
-  { navn: "Boble-Blokk", url: "",
+  { navn: "Boble-Blokk", url: "https://boble-blokk.vercel.app",
     type: "Puslespill", tegn: "🫧", farge: ["#4fd1ff", "#5b3bd6"],
     tekst: "Tetris møter Bubble Bobble" },
 
-  { navn: "Rock Man", url: "",
+  { navn: "Rock Rush", url: "https://rock-rush.vercel.app",
     type: "Arkade", tegn: "💎", farge: ["#8a6a3a", "#2e2416"],
     tekst: "Grav etter diamanter" },
 
-  { navn: "Angry Grannies", url: "",
+  { navn: "Angry Grannies", url: "https://angry-grannies.vercel.app",
     type: "Arkade", tegn: "👵", farge: ["#ff6b8b", "#b0235a"],
     tekst: "Skyt sinte bestemødre" },
 
-  { navn: "Flipperfest", url: "",
+  { navn: "Flipperfest", url: "https://flipperfest.vercel.app",
     type: "Arkade", tegn: "🎸", farge: ["#d23cff", "#3a1aa8"],
     tekst: "Flipper med musikktemaer" },
 
-  { navn: "Globetrotter", url: "",
+  { navn: "Globetrotter", url: "https://globetrotter-mocha.vercel.app",
     type: "Eventyr", tegn: "🌍", farge: ["#3ad0a5", "#1d5fa8"],
-    tekst: "Reis jorda rundt" },
+    tekst: "Jorda rundt med ryggsekk" },
 
-  { navn: "Runekjernen", url: "",
+  { navn: "Echoforge", url: "",
     type: "Eventyr", tegn: "🗡️", farge: ["#7b5cff", "#1e8a6a"],
-    tekst: "Mario, Zelda og Metroid i ett" },
+    tekst: "Legends of Lumina" },
 ];
 /* ===================== (ikke endre noe under her) ===================== */
 </script>
@@ -114,6 +116,9 @@ const SPILL = [
   .flis:hover .spill-knapp{opacity:1;transform:none}
   .navn{font-weight:700;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .info{color:var(--dempet);font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-ikon{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .har-ikon .tegn{display:none}
+  .har-ikon::after{display:none}
   .snart .bilde{filter:grayscale(.6) brightness(.7)}
   .merke{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);font-size:11px;font-weight:600;
          padding:3px 8px;border-radius:999px;z-index:1}
@@ -189,19 +194,43 @@ function lagreSist(navn){
   }catch(e){}
 }
 
+const IKON_FILER = ["icon-512.png","icon-192.png","apple-touch-icon.png","icons/icon-512.png",
+  "icons/icon-192.png","ikon-512.png","ikon-192.png","ikon.png","icon.png","logo.png","favicon.png"];
+
+function ikonKandidater(s){
+  if(s.ikon) return [s.ikon];
+  if(!s.url) return [];
+  const base = s.url.replace(/\/+$/, "") + "/";
+  return IKON_FILER.map(f => base + f);
+}
+
+function settIkon(bilde, s){
+  const liste = ikonKandidater(s);
+  if(!liste.length) return;
+  const img = new Image();
+  let i = 0;
+  img.alt = "";
+  img.className = "app-ikon";
+  img.onload = () => { if(img.naturalWidth >= 48){ bilde.classList.add("har-ikon"); bilde.appendChild(img); } else neste(); };
+  img.onerror = neste;
+  function neste(){ i++; if(i < liste.length) img.src = liste[i]; }
+  img.src = liste[0];
+}
+
 function lagFlis(s){
   const b = document.createElement("button");
   b.className = "flis" + (s.url ? "" : " snart");
   b.innerHTML = `
     <div class="bilde" style="background:linear-gradient(135deg,${s.farge[0]},${s.farge[1]})">
       ${s.url ? "" : '<span class="merke">Kommer snart</span>'}
-      <span style="position:relative;z-index:1">${s.tegn}</span>
+      <span class="tegn" style="position:relative;z-index:1">${s.tegn}</span>
       ${s.url ? '<span class="spill-knapp">▶</span>' : ""}
     </div>
     <div class="navn"></div>
     <div class="info"></div>`;
   b.querySelector(".navn").textContent = s.navn;
   b.querySelector(".info").textContent = s.tekst;
+  settIkon(b.querySelector(".bilde"), s);
   b.onclick = () => startSpill(s);
   return b;
 }
